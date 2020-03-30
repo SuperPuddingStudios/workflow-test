@@ -1,28 +1,34 @@
 name: CI
 on: [push]
 jobs:
-  test_and_build:
+  build:
     runs-on: ubuntu-latest
     container: gableroux/unity3d:2019.3.7f1-update-2020-03-28
-
-    env:
-      UNITY_EDITOR: /opt/Unity/Editor/Unity
-      UNITY_DEFAULT_ARGS: -quit -batchmode -nographics -silent-crashes -logFile
-      PROJECT_PATH: "./Test Project"
-
     steps:
         - name: Checkout Project
           uses: actions/checkout@v1
-        
-        - name: Activate Unity
-          env:
-            UNITY_ACTIVATION_DATA: ${{ secrets.UNITY_ACTIVATION_DATA }}
-            UNITY_ACTIVATION_FILE: ./Activation/Unity_v2019.x.ulf
-          # exit 0 since for some reson unity exits with one even if license was successfully activated
-          run: mkdir -p $(dirname ${UNITY_ACTIVATION_FILE}) && echo ${UNITY_ACTIVATION_DATA} > ${UNITY_ACTIVATION_FILE} && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -manualLicenseFile ${UNITY_ACTIVATION_FILE} || exit 0
 
-        - name: Test code
-          env:
-            TEST_RESULTS_PATH: ./TestResults/results.xml
-            TEST_PLATFORM: PlayMode
-          run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
+        - name: Decrypt the license file
+          run: openssl aes-256-cbc -d -in .github/Unity_v2019.x.ulf.enc -pass pass:${{ secrets.UNITY_LICENSE_DECRYPT_KEY }} -iter 1000 >> .github/Unity_v2019.x.ulf
+        
+        # Activate unity
+        - name: Activate Unity
+          run: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -manualLicenseFile .github/Unity_v2019.x.ulf || exit 0
+        
+        # Build Windows and OSX
+        - name: Build Windows Player
+          run: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -projectPath "./Test Project" -buildWindows64Player ./bin-win64/CISample.exe
+        - name: Build OSX Player
+          run: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -projectPath "./Test Project" -buildOSXUniversalPlayer ./bin-osx/CISample.app      
+        
+        - name: Archive Windows Build
+          uses: actions/upload-artifact@v1
+          with:
+            name: CISampleWin64Binary
+            path: ./bin-win64
+
+        - name: Archive Mac Build
+          uses: actions/upload-artifact@v1
+          with:
+            name: CISampleOSXBinary
+            path: ./bin-osx
