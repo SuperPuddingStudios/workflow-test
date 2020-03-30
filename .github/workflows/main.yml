@@ -25,4 +25,4 @@ jobs:
           env:
             TEST_RESULTS_PATH: ./TestResults/results.xml
             TEST_PLATFORM: playmode
-          run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
+          run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
