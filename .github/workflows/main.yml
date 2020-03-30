@@ -14,15 +14,20 @@ jobs:
         - name: Checkout Project
           uses: actions/checkout@v1
         
+        # - name: Activate Unity
+        #   env:
+        #     UNITY_ACTIVATION_DATA: ${{ secrets.UNITY_ACTIVATION_DATA }}
+        #     UNITY_ACTIVATION_FILE: ./Activation/Unity_v2019.x.ulf
+        #   # exit 0 since for some reson unity exits with one even if license was successfully activated
+        #   run: mkdir -p $(dirname ${UNITY_ACTIVATION_FILE}) && echo ${UNITY_ACTIVATION_DATA} > ${UNITY_ACTIVATION_FILE} && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -manualLicenseFile ${UNITY_ACTIVATION_FILE} || exit 0
+
         - name: Activate Unity
           env:
             UNITY_ACTIVATION_DATA: ${{ secrets.UNITY_ACTIVATION_DATA }}
-            UNITY_ACTIVATION_FILE: ./Activation/Unity_v2019.x.ulf
-          # exit 0 since for some reson unity exits with one even if license was successfully activated
-          run: mkdir -p $(dirname ${UNITY_ACTIVATION_FILE}) && echo ${UNITY_ACTIVATION_DATA} > ${UNITY_ACTIVATION_FILE} && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -manualLicenseFile ${UNITY_ACTIVATION_FILE} || exit 0
+          run: mkdir -p /root/.cache/unity3d && mkdir -p /root/.local/share/unity3d/Unity/ && echo "${UNITY_ACTIVATION_DATA}" | tr -d '\r' > /root/.local/share/unity3d/Unity/Unity_lic.ulf
 
         - name: Test code
           env:
             TEST_RESULTS_PATH: ./TestResults/results.xml
             TEST_PLATFORM: playmode
-          run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
+          run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' ${UNITY_EDITOR} -batchmode -logFile /dev/stdout -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
