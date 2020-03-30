@@ -24,5 +24,5 @@ jobs:
         - name: Test code
           env:
             TEST_RESULTS_PATH: ./TestResults/results.xml
-            TEST_PLATFORM: PlayMode
+            TEST_PLATFORM: playmode
           run: mkdir -p $(dirname ${TEST_RESULTS_PATH}) && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -projectPath "${PROJECT_PATH}" -runTests -testPlatform ${TEST_PLATFORM} -testResults ${TEST_RESULTS_PATH}
