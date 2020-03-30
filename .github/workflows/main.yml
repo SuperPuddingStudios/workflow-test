@@ -9,23 +9,17 @@ jobs:
       UNITY_EDITOR: /opt/Unity/Editor/Unity
       UNITY_DEFAULT_ARGS: -quit -batchmode -nographics -silent-crashes -logFile
       PROJECT_PATH: "./Test Project"
-      UNITY_ACTIVATION_FILE: ./Activation/Unity_v2019.x.ulf
 
     steps:
         - name: Checkout Project
           uses: actions/checkout@v1
         
-        - name: Decrypt Unity license
-          env:
-            UNITY_LICENSE_DECRYPT_KEY: ${{secrets.UNITY_LICENSE_DECRYPT_KEY}}
-            UNITY_ENCRYPTED_LICENSE: .github/Unity_v2019.x.ulf.enc
-          run: mkdir -p $(dirname ${UNITY_ACTIVATION_FILE}) && openssl aes-256-cbc -d -in ${UNITY_ENCRYPTED_LICENSE} -pass pass:${UNITY_LICENSE_DECRYPT_KEY} -iter 1000 > UNITY_ACTIVATION_FILE.
-        
         - name: Activate Unity
-          #env:
-            #UNITY_ACTIVATION_DATA: ${{ secrets.UNITY_ACTIVATION_DATA }}
+          env:
+            UNITY_ACTIVATION_DATA: ${{ secrets.UNITY_ACTIVATION_DATA }}
+            UNITY_ACTIVATION_FILE: ./Activation/Unity_v2019.x.ulf
           # exit 0 since for some reson unity exits with one even if license was successfully activated
-          run: ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -manualLicenseFile ${UNITY_ACTIVATION_FILE} || exit 0
+          run: mkdir -p $(dirname ${UNITY_ACTIVATION_FILE}) && echo ${UNITY_ACTIVATION_DATA} > ${UNITY_ACTIVATION_FILE} && ${UNITY_EDITOR} ${UNITY_DEFAULT_ARGS} -manualLicenseFile ${UNITY_ACTIVATION_FILE} || exit 0
 
         - name: Test code
           env:
