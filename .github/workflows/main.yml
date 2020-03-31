@@ -18,6 +18,9 @@ jobs:
           - 2019.3.7f1
         testMode:
           - playmode
+        targetPlatform:
+          - StandaloneWindows
+          - StandaloneWindows64
     steps:
     
       - name: Checkout repository
@@ -25,11 +28,13 @@ jobs:
         with:
           lfs: true
     
-      - uses: actions/cache@v1.1.0
+      - name: Cache library
+        uses: actions/cache@v1.1.0
         with:
           path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
           restore-keys: |
+            Library-${{ matrix.projectPath }}-
             Library-
 
       - name: Run tests
@@ -41,7 +46,23 @@ jobs:
           testMode: ${{ matrix.testMode }}
           artifactsPath: test-results-${{ matrix.testMode }}-artifacts
 
-      - uses: actions/upload-artifact@v1
+      - name: Actifact test results
+        uses: actions/upload-artifact@v1
         with:
           name: Test results for ${{ matrix.testMode }}
           path: ${{ steps.runTests.outputs.artifactsPath }}
+
+      - name: Build game
+        id: buildGame
+        uses: webbertakken/unity-builder@v0.11
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildsPath: build
+
+      - name: Artifact build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build
+          path: build
