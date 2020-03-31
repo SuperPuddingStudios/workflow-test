@@ -5,7 +5,7 @@ on:
       - .github/workflows/activation.yml
 jobs:
   activation:
-    name: Request manual activation file 🔑
+    name: Request manual activation file
     runs-on: ubuntu-latest
     steps:
       - name: Request manual activation file
