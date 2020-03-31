@@ -12,7 +12,7 @@ namespace Tests
         [Test]
         public void TestTestSimplePasses()
         {
-            Assert.Pass();
+            Assert.Fail();
         }
 
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
